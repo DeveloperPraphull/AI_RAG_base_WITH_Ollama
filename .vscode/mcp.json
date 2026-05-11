@@ -1,0 +1,10 @@
+{
+    "servers": {
+        "samplebot-rag": {
+            "type": "stdio",
+            "command": "python",
+            "args": ["${workspaceFolder}/mcp_server.py"],
+            "env": {}
+        }
+    }
+}
