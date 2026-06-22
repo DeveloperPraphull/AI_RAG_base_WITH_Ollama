@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+import chromadb
+import requests
 from fastapi import APIRouter, Query
 from app.models.schema import ChatRequest
 from app.services.rag_service import get_rag_response
@@ -20,7 +22,7 @@ def root():
 # Chat
 # ---------------------------------------------------------------------------
 
-@router.get("/chat/{query}")
+@router.post("/chat/{query}")
 def chat(query: str):
     response = get_rag_response(query)
     answer = response.get("response", {}).get("answer", "") if "response" in response else ""
@@ -131,3 +133,42 @@ def usage_history(days: int = Query(default=7, ge=1, le=90)):
             for d in sorted_dates
         ],
     }
+
+
+    #---------------------------------------------
+    # health check endpoint
+    #---------------------------------------------  
+
+
+
+@router.get("/health")
+def health():
+
+    health = {
+        "status": "UP"
+    }
+
+    try:
+        client = chromadb.PersistentClient(path="./chroma_db")
+        client.list_collections()
+
+        health["chromadb"] = "UP"
+
+    except Exception as e:
+        health["chromadb"] = f"DOWN: {e}"
+
+    try:
+        response = requests.get(
+    "http://host.docker.internal:11434/api/tags",
+            timeout=5
+        )
+
+        if response.status_code == 200:
+            health["ollama"] = "UP"
+        else:
+            health["ollama"] = "DOWN"
+
+    except Exception as e:
+        health["ollama"] = f"DOWN: {e}"
+
+    return health

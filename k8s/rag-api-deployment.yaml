@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: rag-api
+  namespace: rag-system
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: rag-api
+
+  template:
+    metadata:
+      labels:
+        app: rag-api
+
+    spec:
+      containers:
+      - name: rag-api
+
+        image: developeraatul/rag-api:v1
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8000
+
+        env:
+        - name: OLLAMA_HOST
+          value: http://ollama:11434
+
+        volumeMounts:
+        - mountPath: /app/chroma_db
+          name: chroma-storage
+
+      volumes:
+      - name: chroma-storage
+        persistentVolumeClaim:
+          claimName: chroma-pvc
