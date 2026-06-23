@@ -31,16 +31,17 @@ class GitService:
 
     @classmethod
     def create_or_switch_branch(cls, branch_name: str) -> str:
-        result = cls._run_git(["branch", "--list", branch_name])
-        if result.returncode != 0:
-            raise RuntimeError(f"Failed to check existing branches: {result.stderr.strip()}")
+        # Check branch existence robustly using refs
+        exists_check = cls._run_git(["show-ref", "--verify", f"refs/heads/{branch_name}"])
 
-        if branch_name in result.stdout.splitlines():
+        if exists_check.returncode == 0:
+            # branch exists locally; switch to it
             switch_result = cls._run_git(["switch", branch_name])
             if switch_result.returncode != 0:
                 raise RuntimeError(f"Failed to switch to branch '{branch_name}': {switch_result.stderr.strip()}")
             return switch_result.stdout.strip() or f"Switched to existing branch '{branch_name}'"
 
+        # branch does not exist locally; create it
         create_result = cls._run_git(["switch", "-c", branch_name])
         if create_result.returncode != 0:
             raise RuntimeError(f"Failed to create branch '{branch_name}': {create_result.stderr.strip()}")
