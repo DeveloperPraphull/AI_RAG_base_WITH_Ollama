@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+
+metadata:
+  name: rag-sync
+  namespace: rag-system
+
+spec:
+
+  schedule: "0 2 * * *"
+
+  jobTemplate:
+
+    spec:
+
+      template:
+
+        spec:
+
+          containers:
+
+          - name: sync
+
+            image: rag-api:latest
+
+            command:
+            - python
+            - load_data.py
+
+          restartPolicy: OnFailure
