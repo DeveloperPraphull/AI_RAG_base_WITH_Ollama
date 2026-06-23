@@ -14,6 +14,7 @@ from app.services.rag_service import get_rag_response
 from app.utils.usage_logger import log_query, read_all_logs, read_logs_for_date
 from app.integrations.whatsapp import notify_search
 import chromadb
+from app.services.git_service import GitService
 
 # ---------------------------------------------------------------------------
 # MCP Server
@@ -363,6 +364,43 @@ def usage_history(days: int = 7) -> list[dict]:
         })
 
     return history
+
+
+# ---------------------------------------------------------------------------
+# Tool X — Push code to GitHub
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+def push_code(branch_name: str = "postbymcp", commit_message: str = "Update code by mcp", remote: str = "origin") -> dict:
+    """
+    Create/switch to a branch, commit all current changes, and push to the configured remote.
+
+    Returns a dict with status and Git outputs or error details.
+    """
+    try:
+        GitService.check_repository()
+
+        branch_result = GitService.create_or_switch_branch(branch_name)
+        stage_result = GitService.stage_all()
+        commit_result = GitService.commit_all(commit_message)
+        push_result = GitService.push_branch(branch_name, remote)
+        status = GitService.get_status()
+
+        return {
+            "status": "success",
+            "branch_result": branch_result,
+            "stage_result": stage_result,
+            "commit_result": commit_result,
+            "push_result": push_result,
+            "git_status": status,
+        }
+
+    except Exception as exc:
+        return {
+            "status": "error",
+            "detail": str(exc),
+        }
 
 
 # ---------------------------------------------------------------------------
