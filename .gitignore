@@ -1,8 +1,9 @@
 # Python cache files
 __pycache__/
 *.py[cod]
-.pyc
-
+chroma_db/
+*.sqlite3
+*.pyc
 # Environment files
 .env
 
