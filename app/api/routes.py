@@ -2,9 +2,11 @@ from datetime import datetime, timezone
 import chromadb
 import requests
 from fastapi import APIRouter, Query
-from app.models.schema import ChatRequest
+from app.models.schema import GitPushRequest
+from app.services.git_service import GitService
 from app.services.rag_service import get_rag_response
 from app.utils.usage_logger import log_query, read_all_logs, read_logs_for_date
+from app.integrations.whatsapp import notify_search
 
 router = APIRouter()
 
@@ -27,7 +29,48 @@ def chat(query: str):
     response = get_rag_response(query)
     answer = response.get("response", {}).get("answer", "") if "response" in response else ""
     log_query(query=query, answer=answer, source="api")
+
+    try:
+        notify_search(query=query, source="api", answer=answer)
+    except Exception:
+        pass
+
     return response
+
+
+# ---------------------------------------------------------------------------
+# Git push
+# POST /git/push
+# ---------------------------------------------------------------------------
+
+@router.post("/git/push")
+def git_push(request: GitPushRequest):
+    try:
+        GitService.check_repository()
+        branch_result = GitService.create_or_switch_branch(request.branch_name)
+        stage_result = GitService.stage_all()
+        commit_result = GitService.commit_all(request.commit_message or "Update code")
+        push_result = GitService.push_branch(request.branch_name, request.remote)
+        status = GitService.get_status()
+
+        return {
+            "status": "success",
+            "branch_result": branch_result,
+            "stage_result": stage_result,
+            "commit_result": commit_result,
+            "push_result": push_result,
+            "git_status": status,
+        }
+    except Exception as exc:
+        return {
+            "status": "error",
+            "detail": str(exc),
+        }
+
+
+@router.post("/postbymcp")
+def post_by_mcp(request: GitPushRequest):
+    return git_push(request)
 
 
 # ---------------------------------------------------------------------------
