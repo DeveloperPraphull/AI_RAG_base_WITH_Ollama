@@ -2,8 +2,8 @@ import os
 import requests
 from typing import Any, Dict, Optional
 
-TWILIO_ACCOUNT_SID = os.getenv("AC0b297bffe04ee95fcb2eb0462115f6f7")
-TWILIO_AUTH_TOKEN = os.getenv("1166b6c160836f1e6909da4c7c31d14b")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "+14155238886")
 TWILIO_WHATSAPP_TO = os.getenv("TWILIO_WHATSAPP_TO", "+919754844785")
 TWILIO_API_URL = os.getenv(
