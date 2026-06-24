@@ -79,3 +79,6 @@ class GitService:
         if result.returncode != 0:
             raise RuntimeError(f"Failed to get git status: {result.stderr.strip()}")
         return result.stdout.strip()
+
+
+# test
