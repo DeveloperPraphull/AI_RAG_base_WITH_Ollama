@@ -8,7 +8,7 @@ class GitService:
     """Simple Git utility service for creating branches and pushing code."""
 
     REPO_PATH = Path(os.getenv("GIT_REPO_PATH", Path(__file__).resolve().parents[2]))
-    DEFAULT_REMOTE = os.getenv("GIT_REMOTE", "origin")
+    DEFAULT_REMOTE = os.getenv("GIT_REMOTE", "originby")
 
     @staticmethod
     def _run_git(args: List[str], cwd: Optional[Path] = None) -> subprocess.CompletedProcess:
