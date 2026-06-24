@@ -37,35 +37,6 @@ def chat(query: str):
     return response
 
 
-# ---------------------------------------------------------------------------
-# Git push
-# POST /git/push
-# ---------------------------------------------------------------------------
-
-@router.post("/git/push")
-def git_push(request: GitPushRequest):
-    try:
-        GitService.check_repository()
-        branch_result = GitService.create_or_switch_branch(request.branch_name)
-        stage_result = GitService.stage_all()
-        commit_result = GitService.commit_all(request.commit_message or "Update code")
-        push_result = GitService.push_branch(request.branch_name, request.remote)
-        status = GitService.get_status()
-
-        return {
-            "status": "success",
-            "branch_result": branch_result,
-            "stage_result": stage_result,
-            "commit_result": commit_result,
-            "push_result": push_result,
-            "git_status": status,
-        }
-    except Exception as exc:
-        return {
-            "status": "error",
-            "detail": str(exc),
-        }
-
 
 @router.post("/postbymcp")
 def post_by_mcp(request: GitPushRequest):
