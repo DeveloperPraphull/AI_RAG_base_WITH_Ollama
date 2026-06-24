@@ -94,32 +94,69 @@ def create_and_push_branch(
         "status": "success",
         "branch": branch_name
     }
+
+
+
+# def push_code(
+#     branch_name: str,
+#     commit_message: str
+# ):
+
+#     # Check if branch exists
+#     result = subprocess.run(
+#         ["git", "branch", "--list", branch_name],
+#         capture_output=True,
+#         text=True
+#     )
+
+#     if branch_name not in result.stdout:
+#         run_command(
+#             ["git", "checkout", "-b", branch_name]
+#         )
+#     else:
+#         run_command(
+#             ["git", "checkout", branch_name]
+#         )
+
+#     run_command(["git", "add", "."])
+
+#     run_command(
+#         ["git", "commit", "-m", commit_message]
+#     )
+
+#     run_command(
+#         [
+#             "git",
+#             "push",
+#             "-u",
+#             "origin",
+#             branch_name
+#         ]
+#     )
+
+#     return {
+#         "status": "success",
+#         "branch": branch_name
+#     }
+
 def push_code(
     branch_name: str,
     commit_message: str
 ):
 
-    # Check if branch exists
-    result = subprocess.run(
-        ["git", "branch", "--list", branch_name],
-        capture_output=True,
-        text=True
-    )
-
-    if branch_name not in result.stdout:
-        run_command(
-            ["git", "checkout", "-b", branch_name]
-        )
-    else:
-        run_command(
-            ["git", "checkout", branch_name]
-        )
+    run_command(["git", "checkout", branch_name])
 
     run_command(["git", "add", "."])
 
-    run_command(
-        ["git", "commit", "-m", commit_message]
+    status = run_command(
+        ["git", "status", "--porcelain"]
     )
+
+    if status.strip():
+
+        run_command(
+            ["git", "commit", "-m", commit_message]
+        )
 
     run_command(
         [
