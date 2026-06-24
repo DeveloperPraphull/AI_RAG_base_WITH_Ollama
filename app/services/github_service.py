@@ -131,41 +131,6 @@ def create_and_push_branch(
 
 
 
-
-# def push_code(
-#     branch_name: str,
-#     commit_message: str
-# ):
-
-#     run_command(["git", "checkout", branch_name])
-
-#     run_command(["git", "add", "."])
-
-#     status = run_command(
-#         ["git", "status", "--porcelain"]
-#     )
-
-#     if status.strip():
-
-#         run_command(
-#             ["git", "commit", "-m", commit_message]
-#         )
-
-#     run_command(
-#         [
-#             "git",
-#             "push",
-#             "-u",
-#             "origin",
-#             branch_name
-#         ]
-#     )
-
-#     return {
-#         "status": "success",
-#         "branch": branch_name
-#     }
-
 def push_code(
     branch_name: str,
     commit_message: str
