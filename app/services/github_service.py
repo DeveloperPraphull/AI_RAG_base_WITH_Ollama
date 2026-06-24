@@ -1,8 +1,8 @@
 import subprocess
 
 
-def run_command(cmd):
 
+def run_command(cmd):
     result = subprocess.run(
         cmd,
         capture_output=True,
@@ -12,41 +12,87 @@ def run_command(cmd):
     if result.returncode != 0:
         raise Exception(result.stderr)
 
-    return result.stdout
+    return result.stdout.strip()
 
+def create_branch(branch_name: str):
+
+    run_command(
+        ["git", "checkout", "-b", branch_name]
+    )
+
+    return f"Branch {branch_name} created"
+
+def switch_branch(branch_name: str):
+
+    run_command(
+        ["git", "checkout", branch_name]
+    )
+
+    return f"Switched to {branch_name}"
+
+
+def commit_changes(message: str):
+
+    run_command(["git", "add", "."])
+
+    run_command(
+        ["git", "commit", "-m", message]
+    )
+
+    return "Committed successfully"
+
+def push_branch(branch_name: str):
+
+    run_command(
+        ["git", "push", "origin", branch_name]
+    )
+
+    return f"Pushed {branch_name}"
+
+def create_and_push_branch(
+    branch_name: str,
+    commit_message: str
+):
+
+    run_command(
+        ["git", "checkout", "-b", branch_name]
+    )
+
+    run_command(["git", "add", "."])
+
+    run_command(
+        ["git", "commit", "-m", commit_message]
+    )
+
+    run_command(
+        [
+            "git",
+            "push",
+            "-u",
+            "origin",
+            branch_name
+        ]
+    )
+
+    return {
+        "status": "success",
+        "branch": branch_name
+    }
 
 def push_code(
     branch_name: str,
     commit_message: str
 ):
 
-    run_command([
-        "git",
-        "checkout",
-        "-b",
-        branch_name
-    ])
+    run_command(["git", "add", "."])
 
-    run_command([
-        "git",
-        "add",
-        "."
-    ])
+    run_command(
+        ["git", "commit", "-m", commit_message]
+    )
 
-    run_command([
-        "git",
-        "commit",
-        "-m",
-        commit_message
-    ])
-
-    run_command([
-        "git",
-        "push",
-        "-u",
-        "origin",
-        branch_name
-    ])
+    run_command(
+        ["git", "push", "origin", branch_name]
+    )
 
     return {
         "status": "success",
