@@ -3,14 +3,30 @@ import subprocess
 
 
 def run_command(cmd):
+
     result = subprocess.run(
         cmd,
         capture_output=True,
         text=True
     )
 
+    print("COMMAND:", cmd)
+    print("STDOUT:", result.stdout)
+    print("STDERR:", result.stderr)
+    print("RETURN CODE:", result.returncode)
+
     if result.returncode != 0:
-        raise Exception(result.stderr)
+        raise Exception(
+            f"""
+            Command: {cmd}
+
+            STDOUT:
+            {result.stdout}
+
+            STDERR:
+            {result.stderr}
+            """
+        )
 
     return result.stdout.strip()
 
