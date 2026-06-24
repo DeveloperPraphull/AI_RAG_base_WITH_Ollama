@@ -30,6 +30,40 @@ def run_command(cmd):
 
     return result.stdout.strip()
 
+
+def branch_exists(branch_name: str) -> bool:
+
+    result = subprocess.run(
+        ["git", "branch", "--list", branch_name],
+        capture_output=True,
+        text=True
+    )
+
+    return branch_name in result.stdout
+
+
+def current_branch():
+
+    result = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True
+    )
+
+    return result.stdout.strip()
+
+def has_changes():
+
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True,
+        text=True
+    )
+
+    return bool(result.stdout.strip())
+
+
+
 def create_branch(branch_name: str):
 
     run_command(
@@ -97,32 +131,25 @@ def create_and_push_branch(
 
 
 
+
 # def push_code(
 #     branch_name: str,
 #     commit_message: str
 # ):
 
-#     # Check if branch exists
-#     result = subprocess.run(
-#         ["git", "branch", "--list", branch_name],
-#         capture_output=True,
-#         text=True
-#     )
-
-#     if branch_name not in result.stdout:
-#         run_command(
-#             ["git", "checkout", "-b", branch_name]
-#         )
-#     else:
-#         run_command(
-#             ["git", "checkout", branch_name]
-#         )
+#     run_command(["git", "checkout", branch_name])
 
 #     run_command(["git", "add", "."])
 
-#     run_command(
-#         ["git", "commit", "-m", commit_message]
+#     status = run_command(
+#         ["git", "status", "--porcelain"]
 #     )
+
+#     if status.strip():
+
+#         run_command(
+#             ["git", "commit", "-m", commit_message]
+#         )
 
 #     run_command(
 #         [
@@ -144,31 +171,80 @@ def push_code(
     commit_message: str
 ):
 
-    run_command(["git", "checkout", branch_name])
+    previous_branch = current_branch()
 
-    run_command(["git", "add", "."])
+    try:
 
-    status = run_command(
-        ["git", "status", "--porcelain"]
-    )
+        if branch_exists(branch_name):
 
-    if status.strip():
+            run_command(
+                ["git", "checkout", branch_name]
+            )
+
+        else:
+
+            run_command(
+                ["git", "checkout", "-b", branch_name]
+            )
 
         run_command(
-            ["git", "commit", "-m", commit_message]
+            [
+                "git",
+                "pull",
+                "origin",
+                branch_name
+            ]
         )
 
-    run_command(
-        [
-            "git",
-            "push",
-            "-u",
-            "origin",
-            branch_name
-        ]
-    )
+        run_command(["git", "add", "."])
 
-    return {
-        "status": "success",
-        "branch": branch_name
-    }
+        if has_changes():
+
+            run_command(
+                [
+                    "git",
+                    "commit",
+                    "-m",
+                    commit_message
+                ]
+            )
+
+        run_command(
+            [
+                "git",
+                "push",
+                "-u",
+                "origin",
+                branch_name
+            ]
+        )
+
+        return {
+            "status": "success",
+            "branch": branch_name
+        }
+
+    except Exception as e:
+
+        try:
+
+            run_command(
+                ["git", "reset", "--hard", "HEAD"]
+            )
+
+        except:
+            pass
+
+        try:
+
+            run_command(
+                ["git", "checkout", previous_branch]
+            )
+
+        except:
+            pass
+
+        return {
+            "status": "failed",
+            "error": str(e)
+        }
