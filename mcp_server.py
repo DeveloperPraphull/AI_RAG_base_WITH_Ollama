@@ -6,7 +6,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from dotenv import load_dotenv
 load_dotenv()
+from app.mcp.mcp_instance import mcp
 
+import app.mcp.tools.github_tools
 from datetime import datetime, timezone
 from mcp.server.fastmcp import FastMCP
 from app.services.embedding import get_embeddings
@@ -407,5 +409,12 @@ def push_code(branch_name: str = "postbymcp", commit_message: str = "Update code
 # Entry point — run with stdio transport (used by VS Code / Claude Desktop)
 # ---------------------------------------------------------------------------
 
+# if __name__ == "__main__":
+#     mcp.run(transport="stdio")
+
+
+
+
+
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    mcp.run()
