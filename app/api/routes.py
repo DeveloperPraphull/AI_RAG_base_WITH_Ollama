@@ -6,7 +6,6 @@ from app.models.schema import GitPushRequest
 from app.services.git_service import GitService
 from app.services.rag_service import get_rag_response
 from app.utils.usage_logger import log_query, read_all_logs, read_logs_for_date
-from app.integrations.whatsapp import notify_search
 
 router = APIRouter()
 
