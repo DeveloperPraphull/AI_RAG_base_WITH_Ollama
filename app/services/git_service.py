@@ -65,14 +65,23 @@ class GitService:
             raise RuntimeError(f"Failed to commit changes: {stderr or stdout}")
         return result.stdout.strip() or "Committed changes"
 
-    @classmethod
-    def push_branch(cls, branch_name: str, remote: Optional[str] = None) -> str:
-        remote = remote or cls.DEFAULT_REMOTE
-        result = cls._run_git(["push", "-u", remote, branch_name])
-        if result.returncode != 0:
-            raise RuntimeError(f"Failed to push branch '{branch_name}' to remote '{remote}': {result.stderr.strip()}" )
-        return result.stdout.strip() or f"Pushed branch '{branch_name}' to remote '{remote}'"
+@classmethod
+def push_branch(cls, branch_name: str, remote: Optional[str] = None) -> str:
+    remote = remote or cls.DEFAULT_REMOTE
 
+    if cls.has_remote_changes(branch_name, remote):
+        raise RuntimeError(
+            "Push rejected. Remote branch has new commits. Please pull/rebase before pushing."
+        )
+
+    result = cls._run_git(["push", "-u", remote, branch_name])
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Failed to push branch '{branch_name}' to remote '{remote}': {result.stderr.strip()}"
+        )
+
+    return result.stdout.strip() or f"Pushed branch '{branch_name}' successfully."
     @classmethod
     def get_status(cls) -> str:
         result = cls._run_git(["status", "--short"])
@@ -80,13 +89,64 @@ class GitService:
             raise RuntimeError(f"Failed to get git status: {result.stderr.strip()}")
         return result.stdout.strip()
 
+@classmethod
+def has_remote_changes(cls, branch_name: str, remote: Optional[str] = None) -> bool:
+    remote = remote or cls.DEFAULT_REMOTE
 
-    @classmethod
-    def stage_all(cls) -> str:
-        result = cls._run_git(["add", "--all"])
-        if result.returncode != 0:
-            raise RuntimeError(f"Failed to stage files: {result.stderr.strip()}")
-        return result.stdout.strip() or "Staged all changes"
+    # Fetch latest changes
+    fetch = cls._run_git(["fetch", remote])
+    if fetch.returncode != 0:
+        raise RuntimeError(
+            f"Failed to fetch from remote: {fetch.stderr.strip()}"
+        )
+
+    # Check if remote branch exists
+    exists = cls._run_git(["ls-remote", "--heads", remote, branch_name])
+
+    if not exists.stdout.strip():
+        return False
+
+    # Compare local and remote
+    result = cls._run_git([
+        "rev-list",
+        "--left-right",
+        "--count",
+        f"{branch_name}...{remote}/{branch_name}"
+    ])
+
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
+
+    local_ahead, remote_ahead = map(int, result.stdout.strip().split())
+
+    return remote_ahead > 0
 
 
+@classmethod
+def push_branch(cls, branch_name: str, remote: Optional[str] = None) -> str:
+    remote = remote or cls.DEFAULT_REMOTE
+
+    cls._run_git(["fetch", remote])
+
+    exists = cls._run_git(["ls-remote", "--heads", remote, branch_name])
+
+    if exists.stdout.strip():
+        pull = cls._run_git(["pull", "--rebase", remote, branch_name])
+
+        if pull.returncode != 0:
+            output = pull.stdout + pull.stderr
+
+            if "CONFLICT" in output or "could not apply" in output.lower():
+                raise RuntimeError(
+                    "Merge conflict detected. Resolve conflicts and run 'git rebase --continue'."
+                )
+
+            raise RuntimeError(output)
+
+    push = cls._run_git(["push", "-u", remote, branch_name])
+
+    if push.returncode != 0:
+        raise RuntimeError(push.stderr.strip())
+
+    return push.stdout.strip() or "Push successful."
 # test
