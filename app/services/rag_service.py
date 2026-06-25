@@ -1,7 +1,8 @@
 from app.services.embedding import get_embeddings
 import chromadb
-import ollama
+from ollama import Client
 import re
+import os
 from typing import List, Dict, Any
 
 # =========================================
@@ -9,6 +10,10 @@ from typing import List, Dict, Any
 # =========================================
 
 OLLAMA_MODEL = "llama3.2"
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+# Create Ollama client with host
+ollama_client = Client(host=OLLAMA_HOST)
 
 TOP_K = 3
 
@@ -252,7 +257,7 @@ Question:
         # Step 8: Generate Response
         # ---------------------------------
 
-        response = ollama.chat(
+        response = ollama_client.chat(
             model=OLLAMA_MODEL,
             messages=[
                 {
