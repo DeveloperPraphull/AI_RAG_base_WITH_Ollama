@@ -81,4 +81,12 @@ class GitService:
         return result.stdout.strip()
 
 
+    @classmethod
+    def stage_all(cls) -> str:
+        result = cls._run_git(["add", "--all"])
+        if result.returncode != 0:
+            raise RuntimeError(f"Failed to stage files: {result.stderr.strip()}")
+        return result.stdout.strip() or "Staged all changes"
+
+
 # test
