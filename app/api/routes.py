@@ -160,6 +160,11 @@ def health():
     health = {
         "status": "UP"
     }
+    health = {
+    "status": "OK",
+    "branch": "feature"
+}
+
 
     try:
         client = chromadb.PersistentClient(path="./chroma_db")
