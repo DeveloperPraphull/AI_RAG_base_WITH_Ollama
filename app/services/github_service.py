@@ -41,6 +41,14 @@ def branch_exists(branch_name: str) -> bool:
 
     return branch_name in result.stdout
 
+def remote_branch_exists(branch_name: str) -> bool:
+    result = subprocess.run(
+        ["git", "ls-remote", "--heads", "origin", branch_name],
+        capture_output=True,
+        text=True
+    )
+
+    return bool(result.stdout.strip())
 
 def current_branch():
 
@@ -130,7 +138,6 @@ def create_and_push_branch(
     }
 
 
-
 def push_code(
     branch_name: str,
     commit_message: str
@@ -140,6 +147,7 @@ def push_code(
 
     try:
 
+        # Switch to branch or create it
         if branch_exists(branch_name):
 
             run_command(
@@ -152,17 +160,29 @@ def push_code(
                 ["git", "checkout", "-b", branch_name]
             )
 
+        # Pull only if the remote branch already exists
+        if remote_branch_exists(branch_name):
+
+            run_command(
+                [
+                    "git",
+                    "pull",
+                    "--rebase",
+                    "origin",
+                    branch_name
+                ]
+            )
+
+        else:
+
+            print(f"Remote branch '{branch_name}' does not exist. Skipping pull.")
+
+        # Stage all changes
         run_command(
-            [
-                "git",
-                "pull",
-                "origin",
-                branch_name
-            ]
+            ["git", "add", "."]
         )
 
-        run_command(["git", "add", "."])
-
+        # Commit only if there are changes
         if has_changes():
 
             run_command(
@@ -174,6 +194,7 @@ def push_code(
                 ]
             )
 
+        # Push the branch
         run_command(
             [
                 "git",
@@ -192,20 +213,16 @@ def push_code(
     except Exception as e:
 
         try:
-
             run_command(
                 ["git", "reset", "--hard", "HEAD"]
             )
-
         except:
             pass
 
         try:
-
             run_command(
                 ["git", "checkout", previous_branch]
             )
-
         except:
             pass
 
@@ -213,8 +230,3 @@ def push_code(
             "status": "failed",
             "error": str(e)
         }
-    
-
-
-
-    
