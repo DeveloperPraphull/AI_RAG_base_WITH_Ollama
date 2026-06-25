@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: rag-ingress
+  namespace: rag-system
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+  - host: rag.local
+
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+
+        backend:
+          service:
+            name: rag-api
+            port:
+              number: 8000
