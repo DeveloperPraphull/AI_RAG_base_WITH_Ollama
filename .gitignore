@@ -1,14 +1,24 @@
-# Python cache files
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python
 __pycache__/
 *.py[cod]
-chroma_db/
-*.sqlite3
-*.pyc
-# Environment files
+*.pyo
+
+# Environment variables
 .env
 
-# VS Code
+# IDE
 .vscode/
+.idea/
 
 # Logs
-logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
