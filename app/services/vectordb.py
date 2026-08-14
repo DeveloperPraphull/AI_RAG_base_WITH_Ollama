@@ -1,20 +1,24 @@
+import uuid
+
 import chromadb
 
 client = chromadb.PersistentClient(path="./chroma_db")
-
 collection = client.get_or_create_collection(name="rag_collection")
 
+
 def store_documents(chunks, embeddings):
-    for i in range(len(chunks)):
-        collection.add(
-            documents=[chunks[i]],
-            embeddings=[embeddings[i]],
-            ids=[str(i)]
-        )
+    ids = [str(uuid.uuid4()) for _ in chunks]
+
+    collection.upsert(
+        documents=chunks,
+        embeddings=embeddings,
+        ids=ids,
+    )
+
 
 def query_db(query_embedding):
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=3
+        n_results=3,
     )
     return results["documents"][0]
