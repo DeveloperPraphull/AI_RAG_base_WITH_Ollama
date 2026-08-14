@@ -6,9 +6,7 @@ chroma_db/
 *.pyc
 # Environment files
 .env
-venv/
-.venv/
-env/
+
 # VS Code
 .vscode/
 
